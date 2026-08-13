@@ -29,9 +29,10 @@ Jira Task
 |---|---|
 | VPC + subnet + SG + IGW + route table | ✅ Done |
 | GitHub repo (devops-project) | ✅ Done |
-| Jenkins server (EC2 t3.micro) | ✅ Done |
+| Jenkins server (EC2 t3.small + Elastic IP) | ✅ Done |
 | Maven installed & builds | ✅ Done |
 | First Jenkins build (Jenkinsfile) | ✅ Done |
+| Auto trigger (GitHub webhook) | ✅ Done |
 | SonarQube | ⏳ Next |
 | Trivy | ⏳ |
 | Nexus | ⏳ |
@@ -70,6 +71,8 @@ Jira Task
 - Internet Gateway: `igw-0838db87fc766b89f`
 - Route table: `rtb-0da8fffa4bd38871c`
 - Key pair: `jenkins-key`
+- Instance: `i-0e02770e0faa010a0` (t3.small, ap-south-2a)
+- Elastic IP: `16.113.34.59` (allocation `eipalloc-0438e03621a8b9dad`)
 
 ### Gold points learned
 - **Public vs private subnet**: a public subnet = route to IGW (0.0.0.0/0) AND auto-assign public IP. It's NOT a checkbox.
@@ -173,6 +176,26 @@ mvn -version
 - New Item → **Pipeline** → Definition: **Pipeline script from SCM** → Git URL + credential + `*/main` + `Jenkinsfile`.
 - First build: **Build Now** → Console Output → `Finished: SUCCESS`.
 
+### 3.7 Elastic IP + server resize (maintenance with zero downtime of endpoint)
+- A normal public IP is temporary (released on stop). An **Elastic IP** is a reserved, stable public IP.
+- Allocate: `aws ec2 allocate-address` → associate: `aws ec2 associate-address --instance-id i-xxx --allocation-id eipalloc-xxx`
+- Resize (vertical scaling = scale UP): `stop-instances` → `modify-instance-attribute --instance-type t3.small` → `start-instances`
+- We went t3.micro (1GB) → t3.small (2GB) to make room for SonarQube. EIP = endpoint stays stable.
+- Scale UP (resize) vs scale OUT (more instances behind a LB) — cloud-native prefers scale OUT.
+
+### 3.8 The "works until reboot" Java bug (MUST-remember)
+- Jenkins failed after the resize reboot: `journalctl` showed "Java 17 older than minimum (Java 21)".
+- Root cause: yum's Maven pulled in java-17 as a dependency → **alternatives** switched the default from 21 → 17. Jenkins only noticed on fresh start.
+- Diagnosis chain: `systemctl status` → `journalctl -u jenkins` → `ls /usr/lib/jvm/` → `alternatives --display java` → `alternatives --set java /usr/lib/jvm/java-21-amazon-corretto/bin/java` → `reset-failed` → `start`.
+- Lesson: verify a service restarts cleanly after a reboot ("reboot test").
+
+### 3.9 Automatic trigger (GitHub webhook — event-driven CI)
+- Job → Configure → Triggers → **"GitHub hook trigger for GITScm polling"**.
+- GitHub → repo → Settings → Webhooks → Add webhook → Payload URL `http://<jenkins-ip>:8080/github-webhook/`, content-type json, push event.
+- Result: every `git push` → GitHub POSTs to Jenkins → build runs automatically (no human, no polling).
+- Webhooks = event-driven (push-not-poll) — the modern pattern (vs Poll SCM = wasteful polling).
+- Requires Jenkins to be publicly reachable — that's what the Elastic IP provides.
+
 ### Gold points learned
 - yum = Red Hat family; apt = Debian/Ubuntu family.
 - Repos (`/etc/yum.repos.d/*.repo`) + GPG key = signed, verified packages (supply-chain security).
@@ -181,6 +204,8 @@ mvn -version
 - `/opt` = manually installed software; symlink `ln -sf` = pointer/shortcut.
 - **Secrets**: never paste tokens in code/chat — store in Jenkins Credentials, rotate when exposed.
 - Jenkins = orchestrator; Maven = builder (separation of tools).
+- Multiple JVMs on one box = version conflicts via **alternatives**; check with `alternatives --display`.
+- Containers (Docker) vs VMs: container shares host kernel, VM virtualizes hardware.
 
 ---
 
