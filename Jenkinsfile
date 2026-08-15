@@ -23,5 +23,10 @@ pipeline {
                 }
             }
         }
+        stage('Trivy FS Scan') {
+            steps {
+                sh '/usr/local/bin/trivy fs --scanners vuln,secret,misconfig --severity HIGH,CRITICAL --ignore-unfixed --exit-code 1 .'
+            }
+        }
     }
 }
