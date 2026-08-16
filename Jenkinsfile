@@ -16,20 +16,16 @@ pipeline {
                         usernameVariable: 'NEXUS_USER',
                         passwordVariable: 'NEXUS_PASS'
                     )]) {
-                        sh '''
-                            cat > settings.xml <<EOF
-                            <settings>
-                              <servers>
-                                <server>
-                                  <id>devops-releases</id>
-                                  <username>${NEXUS_USER}</username>
-                                  <password>${NEXUS_PASS}</password>
-                                </server>
-                              </servers>
-                            </settings>
-                            EOF
-                            mvn -B -s settings.xml deploy
-                        '''
+                        writeFile file: 'settings.xml', text: """<settings>
+  <servers>
+    <server>
+      <id>devops-releases</id>
+      <username>${env.NEXUS_USER}</username>
+      <password>${env.NEXUS_PASS}</password>
+    </server>
+  </servers>
+</settings>"""
+                        sh 'mvn -B -s settings.xml deploy'
                     }
                 }
             }
