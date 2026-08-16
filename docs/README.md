@@ -26,24 +26,26 @@ Jira Task
 
 | Stage | Status |
 |---|---|
-| VPC + subnet + SG + IGW + route table | ✅ Done |
+| VPC + subnet + SG + IGW + route table | ✅ Done (AWS sandbox retired — terminated, no billing) |
 | GitHub repo (devops-project) | ✅ Done |
-| Jenkins server (EC2 c7i-flex.large + Elastic IP) | ✅ Done |
+| Jenkins server (EC2 c7i-flex.large + Elastic IP) | ✅ Done (retired) → rebuilt **locally** |
 | Maven installed & builds | ✅ Done |
 | First Jenkins build (Jenkinsfile) | ✅ Done |
-| Auto trigger (GitHub webhook) | ✅ Done |
+| Auto trigger (GitHub webhook) | ✅ Done (server-era) — locally use SCM polling/build now |
 | Docker installed on server | ✅ Done |
-| SonarQube container (c7i-flex.large, port 9000) | ✅ Done — login works |
-| SonarQube in Jenkins pipeline (analysis + quality gate) | ✅ Done — build SUCCESS |
-| Trivy (FS scan stage in pipeline) | ✅ Done — build SUCCESS |
-| Nexus | ⏳ |
-| Docker image + trivy image scan | ⏳ |
+| SonarQube container (port 9000) | ✅ Done (server-era) — not yet rebuilt locally |
+| SonarQube in Jenkins pipeline (analysis + quality gate) | ✅ Done (server-era) — not yet rebuilt locally |
+| Trivy (FS scan stage in pipeline) | ✅ Done (server-era) — not yet rebuilt locally |
+| Nexus | ✅ Done — **local**, JAR published & fetchable (HTTP 200) |
+| Docker image + trivy image scan | 🔶 In progress — Dockerfile written, image not built yet |
 | Kubernetes deploy | ⏳ |
 | Monitoring | ⏳ |
 
 ---
 
 ## Resource IDs (my sandbox)
+
+> ⚠️ **Retired 2026-08-16.** The AWS sandbox was fully terminated (instance, EIP, SG, IGW, route table, subnet, VPC, key pair). Kept below for history only — nothing project-scoped remains on AWS.
 
 | Resource | ID |
 |---|---|
@@ -58,19 +60,17 @@ Jira Task
 | Elastic IP | `16.113.34.59` (allocation `eipalloc-0438e03621a8b9dad`) |
 | GitHub repo | `ranjay24/devops-project` |
 
-**Service endpoints:**
-- Jenkins: `http://16.113.34.59:8080`
-- SonarQube: `http://16.113.34.59:9000` (dashboard: `/dashboard?id=DevOps-Project`)
-- Nexus: `http://16.113.34.59:8081` (to be set up — SG port 8081 already opened)
-- SSH: `ssh -i jenkins-key.pem ec2-user@16.113.34.59`
+**Local endpoints (current):**
+- Jenkins: `http://localhost:8082`
+- Nexus: `http://localhost:8081` (repo `devops-releases`)
 
 ---
 
 ## Current state (where we are)
 
-Pipeline is fully green: **Maven Build → SonarQube Analysis → Quality Gate (OK) → Trivy FS Scan (0 findings)**.
+Pipeline is green **locally**: **Maven Build (Docker agent) → Publish to Nexus** — the JAR is in `devops-releases` (HTTP 200).
 
-**Next up: Nexus** artifact repository. See `10-commands.md` / `11-resume-prompt.md` for the plan.
+**Next up: Dockerize the app** — `Dockerfile` written at repo root, needs `mvn package` → `docker build -t devops-app:1.0.0 .` → run it. See `12-local-pipeline.md` for the full local setup + this session's lessons.
 
 ---
 
@@ -89,5 +89,6 @@ Pipeline is fully green: **Maven Build → SonarQube Analysis → Quality Gate (
 | `09-gold-points.md` | Every gold point + interview cheat sheet, in one place |
 | `10-commands.md` | Quick command references (AWS, server, git, docker) |
 | `11-resume-prompt.md` | **THE prompt** — paste this in a new chat to resume learning |
+| `12-local-pipeline.md` | **Fully local rebuild** (AWS retired), containers, Jenkins job, lessons learned, next steps |
 
 > Tip: `11-resume-prompt.md` is the single most useful file. When starting a fresh chat, paste its contents as the opening message.

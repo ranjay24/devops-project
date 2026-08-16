@@ -23,8 +23,9 @@ Everything we've learned while building the full DevOps pipeline is organized in
 | `docs/09-gold-points.md` | All gold points + interview cheat sheet |
 | `docs/10-commands.md` | Quick command references |
 | `docs/11-resume-prompt.md` | **THE prompt** for a new chat |
+| `docs/12-local-pipeline.md` | Fully local rebuild (AWS retired), containers, Jenkins job, lessons, next steps |
 
 ## Current state
 
-Pipeline is green: **Maven Build → SonarQube Analysis → Quality Gate (OK) → Trivy FS Scan (0 findings)**.
-Next: **Nexus** artifact repository (see `docs/README.md`).
+Pipeline is green **locally**: **Maven Build (Docker agent) → Publish to Nexus**. AWS sandbox retired (terminated, no billing).
+Next: **Dockerize the app** — `Dockerfile` written, image build pending (see `docs/README.md`).
