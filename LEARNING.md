@@ -24,8 +24,9 @@ Everything we've learned while building the full DevOps pipeline is organized in
 | `docs/10-commands.md` | Quick command references |
 | `docs/11-resume-prompt.md` | **THE prompt** for a new chat |
 | `docs/12-local-pipeline.md` | Fully local rebuild (AWS retired), containers, Jenkins job, lessons, next steps |
+| `docs/13-docker-registry-k8s.md` | Dockerize app, local registry, Kubernetes deploy, lessons learned |
 
 ## Current state
 
 Pipeline is green **locally**: **Maven Build (Docker agent) → Publish to Nexus**. AWS sandbox retired (terminated, no billing).
-Next: **Dockerize the app** — `Dockerfile` written, image build pending (see `docs/README.md`).
+Dockerized app: **`devops-app:1.0.0`** built, pushed to local registry, deployed to Kubernetes (2 replicas). Next: **Monitoring (Prometheus + Grafana)**.

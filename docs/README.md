@@ -15,10 +15,11 @@ Jira Task
 ```
 
 **Project Phases:**
-- Phase 1: Networking setup (VPC, instances, K8s) ✅
+- Phase 1: Networking setup (VPC, instances) ✅ (AWS retired)
 - Phase 2: GitHub repository ✅
-- Phase 3: CI/CD pipeline (in progress)
-- Phase 4: Monitoring
+- Phase 3: CI/CD pipeline (Jenkins, Maven, Nexus) ✅
+- Phase 4: Dockerize + Registry + Kubernetes ✅
+- Phase 5: Monitoring (Prometheus + Grafana) ⏳
 
 ---
 
@@ -37,9 +38,10 @@ Jira Task
 | SonarQube in Jenkins pipeline (analysis + quality gate) | ✅ Done (server-era) — not yet rebuilt locally |
 | Trivy (FS scan stage in pipeline) | ✅ Done (server-era) — not yet rebuilt locally |
 | Nexus | ✅ Done — **local**, JAR published & fetchable (HTTP 200) |
-| Docker image + trivy image scan | 🔶 In progress — Dockerfile written, image not built yet |
-| Kubernetes deploy | ⏳ |
-| Monitoring | ⏳ |
+| Docker image build + run | ✅ Done — `devops-app:1.0.0`, output `Hello DevOps World! v2` |
+| Local Docker registry (port 5000) | ✅ Done — image pushed & verified |
+| Kubernetes deploy (Docker Desktop) | ✅ Done — Deployment + Service, 2 replicas running |
+| Monitoring | ⏳ Next — Prometheus + Grafana |
 
 ---
 
@@ -63,6 +65,9 @@ Jira Task
 **Local endpoints (current):**
 - Jenkins: `http://localhost:8082`
 - Nexus: `http://localhost:8081` (repo `devops-releases`)
+- Local Registry: `http://localhost:5000`
+- Kubernetes: `https://kubernetes.docker.internal:6443`
+- K8s App Service: `localhost:30080` (NodePort)
 
 ---
 
@@ -70,7 +75,9 @@ Jira Task
 
 Pipeline is green **locally**: **Maven Build (Docker agent) → Publish to Nexus** — the JAR is in `devops-releases` (HTTP 200).
 
-**Next up: Dockerize the app** — `Dockerfile` written at repo root, needs `mvn package` → `docker build -t devops-app:1.0.0 .` → run it. See `12-local-pipeline.md` for the full local setup + this session's lessons.
+Dockerized the app: **`devops-app:1.0.0`** built, pushed to local registry (`localhost:5000`), deployed to Kubernetes with 2 replicas. Console app outputs `Hello DevOps World! v2`.
+
+**Next up: Monitoring** — Prometheus + Grafana for cluster and app metrics. See `12-local-pipeline.md` for the full local setup and `13-docker-registry-k8s.md` for today's Docker/registry/K8s session.
 
 ---
 
@@ -90,5 +97,6 @@ Pipeline is green **locally**: **Maven Build (Docker agent) → Publish to Nexus
 | `10-commands.md` | Quick command references (AWS, server, git, docker) |
 | `11-resume-prompt.md` | **THE prompt** — paste this in a new chat to resume learning |
 | `12-local-pipeline.md` | **Fully local rebuild** (AWS retired), containers, Jenkins job, lessons learned, next steps |
+| `13-docker-registry-k8s.md` | Dockerize app, local registry, Kubernetes deploy, lessons learned |
 
 > Tip: `11-resume-prompt.md` is the single most useful file. When starting a fresh chat, paste its contents as the opening message.

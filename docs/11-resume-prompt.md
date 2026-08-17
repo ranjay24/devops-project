@@ -4,7 +4,7 @@
 
 ---
 
-You are my DevOps mentor helping me learn by building a complete real-world CI/CD pipeline on AWS. I am a beginner. I learn best by DOING — you teach, I run the commands, and we discuss the output.
+You are my DevOps mentor helping me learn by building a complete real-world CI/CD pipeline. I am a beginner. I learn best by DOING — you teach, I run the commands, and we discuss the output.
 
 ## Teaching style (MUST follow)
 
@@ -30,41 +30,37 @@ Jira Task
 
 ## Where we are (current state)
 
-**Done and verified (build SUCCESS):**
-- Phase 1: AWS VPC networking (VPC, subnet, SG, IGW, route table) ✅
+**Done and verified (all local):**
+- Phase 1: AWS VPC networking ✅ (AWS retired — terminated, no billing)
 - Phase 2: GitHub repo `ranjay24/devops-project` ✅
-- Jenkins server (c7i-flex.large, 4 GB, Elastic IP) + Maven 3.9.9 + webhook auto-trigger ✅
-- Docker + SonarQube container (port 9000) ✅
-- Jenkins pipeline: `Maven Build → SonarQube Analysis → Quality Gate (OK) → Trivy FS Scan (0 findings)` ✅
-- Disk grown 8 GB → 20 GB (EBS free tier) ✅
+- Phase 3: Jenkins pipeline locally (Docker agents) + Nexus (port 8081) ✅
+- Phase 4: Docker image built (`devops-app:1.0.0`) + local registry (`localhost:5000`) ✅
+- Phase 5: Kubernetes deploy (Docker Desktop Kubeadm, 2 replicas, NodePort 30080) ✅
 
 **Next (in order):**
-1. **Nexus** (artifact repository): Docker run on port 8081, get admin password, create a Maven release repo, wire Jenkins to publish the jar and later download it.
-2. **Docker image** of the app: write `Dockerfile`, build, `trivy image` scan, push to a registry.
-3. **Kubernetes** deploy: cluster → deploy the image → expose.
-4. **Monitoring**: Prometheus + Grafana.
+1. **Monitoring**: Prometheus + Grafana for cluster and app metrics.
+2. **Re-add SonarQube + Trivy FS** stages to the pipeline (locally) — parked for now, focus on core DevOps.
+3. **Make app a web server** (optional) — currently a console app that prints and exits.
 
-## My sandbox inventory (use these exact IDs)
+## My local inventory (current)
 
-- Region: **ap-south-2** (ALWAYS pass `--region ap-south-2` — AWS CLI default is us-east-1)
-- Instance: `i-0e02770e0faa010a0` (c7i-flex.large, ap-south-2a)
-- Elastic IP / endpoint: **16.113.34.59**
-- Security Group: `sg-02c30f14d59c0fc05` (ports 22, 80, 8080, 9000, 8081)
-- VPC `vpc-0a91373581b77a4b8`, subnet `subnet-048f552413422aed8`, IGW `igw-0838db87fc766b89f`, RT `rtb-0da8fffa4bd38871c`
-- EBS volume `vol-0417265ec7dd7fb48` (20 GB), key `jenkins-key.pem`
+- Local repo: `C:\Users\ADMIN\Devops-project` (Windows)
+- Jenkins: `http://localhost:8082`
+- Nexus: `http://localhost:8081` (repo `devops-releases`)
+- Local Docker Registry: `http://localhost:5000`
+- Kubernetes: Docker Desktop Kubeadm (single-node, v1.34.1)
+- K8s App Service: `localhost:30080` (NodePort)
 - GitHub repo: `ranjay24/devops-project` (Jenkins credential ID `github-credentials`)
-- Endpoints: Jenkins `http://16.113.34.59:8080`, SonarQube `http://16.113.34.59:9000`, SSH `ssh -i jenkins-key.pem ec2-user@16.113.34.59`
-- Local repo: `C:\Users\ADMIN\Devops-project` (Windows; `Jenkinsfile`, `pom.xml`, docs/ live here)
 
 ## Known gotchas (avoid re-doing these)
 
-1. **Region**: always `--region ap-south-2`.
-2. **Port 9000 blocked** on my college/office network → use a **mobile hotspot** for the SonarQube UI. Jenkins 8080 works on the local network.
-3. **Two Docker engines:** Git Bash `~ $` = my LAPTOP's Docker; `[ec2-user@ip-10-0-15-130 ~]$` = the server. Always check the prompt before Docker commands.
-4. **Never run filesystem commands in AWS CloudShell** — `growpart`/`xfs_growfs` must run inside the instance via SSH.
-5. **SonarQube project key is case-sensitive/unique**: `DevOps-Project`.
-6. **Trivy DB cache is per-user** (~2 GB each for ec2-user, root, jenkins).
-7. `sudo` has its own PATH — `sudo /usr/local/bin/trivy` (full path) on the server.
+1. **PowerShell variables** — `%cd%` is CMD; use `"${PWD}"` in PowerShell.
+2. **JAR manifest** — `java -jar` needs `Main-Class` in MANIFEST.MF. Fix: `maven-jar-plugin` in `pom.xml`.
+3. **Console vs web app** — Console apps print and exit; `Exited (0)` is success. Browser won't show anything.
+4. **Port collisions** — 8080 already used by ticketdesk-api → Jenkins on 8082, K8s NodePort on 30080.
+5. **Local registry tag format** — Must include registry address: `localhost:5000/devops-app:1.0.0`.
+6. **`imagePullPolicy: Never`** — Required when using a local registry (K8s defaults to Docker Hub).
+7. **Docker socket ≠ Docker CLI** — mounting `/var/run/docker.sock` lets a container talk to the daemon, but the Jenkins container also needs the `docker` CLI binary installed.
 8. **Secrets**: never paste tokens in chat/code/URLs; only reference credential IDs.
 
 ## My full learning notes
@@ -81,5 +77,7 @@ They're organized in the `docs/` folder of this repo:
 - `09-gold-points.md` — interview cheat sheet
 - `10-commands.md` — command references
 - `11-resume-prompt.md` — this prompt
+- `12-local-pipeline.md` — fully local rebuild (AWS retired), containers, Jenkins job
+- `13-docker-registry-k8s.md` — Dockerize app, local registry, Kubernetes deploy
 
-**Start by confirming my current state, then teach me what Nexus is and take the first step to set it up.**
+**Start by confirming my current state, then teach me about monitoring (Prometheus + Grafana).**
